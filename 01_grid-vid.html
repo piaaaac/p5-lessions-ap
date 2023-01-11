@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LAGO LOGO</title>
+  <style>
+    body, * { margin: 0; font-size: 0; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js" integrity="sha512-WJXVjqeINVpi5XXJ2jn0BSCfp0y80IKrYh731gLRnkAS9TKc5KNt/OfLtu+fCueqdWniouJ1ubM+VI/hbo7POQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head>
+<body>
+<script>
+
+var folder = "assets/videos";
+var vidOri, img, gridSize;
+
+function setup () {
+  createCanvas(windowWidth, windowHeight);
+  noStroke();
+  rectMode(CENTER);
+  stroke(255, 40);
+  frameRate(5);
+
+  gridSize = 25;
+  var sources = [folder + '/3d-basic-mid-inside.mp4', folder + '/3d-basic-mid-inside.webm'];
+  var sources = [folder + '/ink.mp4', folder + '/ink.webm'];
+  vidOri = createVideo(sources, function () {
+    vidOri.loop();
+  });
+  vidOri.hide();
+}
+
+function draw () {
+  background(155);
+  var rows = ceil(height/gridSize);
+  var cols = ceil(width/gridSize);
+  img = resizeImg(vidOri, width, height);
+  img.loadPixels();
+  for (var column = 0; column < cols; column ++ ) {
+    for (var row = 0; row < rows; row++) {
+      var x = gridSize * column + (gridSize/2);
+      var y = gridSize * row + (gridSize/2);
+      var d = pixelDensity();
+      var index = floor(width * d * y + x) * 4 * d;
+      var r = img.pixels[index + 0];
+      var g = img.pixels[index + 1];
+      var b = img.pixels[index + 2];
+      var c = color(r, g, b);
+      drawSquare(c, x, y);
+    }
+  }
+  img.updatePixels();
+}
+
+
+// -----------------------------------
+function drawSquare (color, x, y) {
+  var h = hue(color);
+  var s = saturation(color);
+  var b = brightness(color);
+
+  if (h > map(mouseX, 0,width, 0,255)) {
+    fill(255, 128, 0);
+  } else {
+    fill(255, 0, 0);
+  }
+
+  if (s > map(mouseY, 0,height, 0,255)) {
+    stroke(0, 0, 255);
+  } else {
+    stroke(0, 255, 0);
+  }
+
+  if (random() < 0.001) {
+    noStroke();
+    rect(x, y, gridSize, gridSize/3);
+    rect(x, y, gridSize/3, gridSize);
+  } else {
+    if (b > map(noise(frameCount*0.1), 0,1, 0,255)) {
+      rect(x, y, gridSize, gridSize);
+    } else {
+      circle(x, y, gridSize);
+    }
+  }
+}
+// -----------------------------------
+
+
+function resizeImg (imgOri, w, h) {
+  var img = createGraphics(w, h);
+  var scale = imgOri.width/imgOri.height > w/h
+    ? h/imgOri.height // imgOri is wider than destination
+    : w/imgOri.width  // imgOri is taller than destination
+  img.image(imgOri, 0,0, imgOri.width*scale, imgOri.height*scale, 0, 0, w, h);
+  return img;
+}
+
+function windowResized () {
+  resizeCanvas(windowWidth, windowHeight);
+  img = resizeImg(vidOri, width, height);
+}
+
+</script>
+</body>
+</html>
